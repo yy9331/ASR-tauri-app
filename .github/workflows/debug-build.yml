@@ -146,7 +146,15 @@ jobs:
         run: |
           echo "=== 清理之前的构建 ==="
           rm -rf src-tauri/target/
+          rm -rf src-tauri/Cargo.lock
           rm -rf dist/
+          
+          # Windows 特定清理
+          if [ "${{ github.event.inputs.platform }}" = "windows-latest" ]; then
+            echo "清理 Windows 特定缓存..."
+            Remove-Item -Path "$env:USERPROFILE\AppData\Local\tauri\WixTools*" -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item -Path "$env:USERPROFILE\AppData\Local\tauri\NsisTools*" -Recurse -Force -ErrorAction SilentlyContinue
+          fi
 
       - name: Build frontend
         run: |

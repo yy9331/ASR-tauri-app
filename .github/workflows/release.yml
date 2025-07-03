@@ -127,8 +127,27 @@ jobs:
       - name: Build frontend
         run: bun run build
 
+      - name: Clean Tauri build cache
+        run: |
+          echo "=== 清理 Tauri 构建缓存 ==="
+          rm -rf src-tauri/target/
+          rm -rf src-tauri/Cargo.lock
+          # Windows 特定清理
+          if [ "${{ matrix.platform }}" = "windows-latest" ]; then
+            echo "清理 Windows 特定缓存..."
+            Remove-Item -Path "$env:USERPROFILE\AppData\Local\tauri\WixTools*" -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item -Path "$env:USERPROFILE\AppData\Local\tauri\NsisTools*" -Recurse -Force -ErrorAction SilentlyContinue
+          fi
+
       - name: Build Tauri app
-        run: bun run tauri build
+        run: |
+          echo "=== 构建前检查 ==="
+          echo "当前目录: $(pwd)"
+          echo "Tauri 配置:"
+          cat src-tauri/tauri.conf.json
+          
+          echo "=== 开始构建 ==="
+          bun run tauri build --verbose
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Linux 特定环境变量
