@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "cm-asr-app",
+  "productName": "智能语音识别助手",
   "version": "0.1.0",
-  "identifier": "com.cm-asr-app.app",
+  "identifier": "com.cm-asr-app.desktop",
   "build": {
     "beforeDevCommand": "bun run dev",
     "devUrl": "http://localhost:1420",
@@ -12,9 +12,13 @@
   "app": {
     "windows": [
       {
-        "title": "cm-asr-app",
-        "width": 800,
-        "height": 600
+        "title": "智能语音识别助手",
+        "width": 900,
+        "height": 700,
+        "minWidth": 800,
+        "minHeight": 600,
+        "center": true,
+        "resizable": true
       }
     ],
     "security": {

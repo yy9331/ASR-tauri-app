@@ -2,34 +2,46 @@
 
 一个基于 Tauri + React + Whisper + Tailwind CSS 的跨平台智能语音识别与文本修饰桌面应用。
 
-## ✨ 功能特性
+## 🚀 快速下载
 
-- 🎙️ **实时录音**: 使用浏览器录音 API 进行高质量录音
-- 🤖 **AI 语音识别**: 集成 OpenAI Whisper 模型进行准确的语音转文字
-- ✨ **智能文本修饰**: 自动检测语言并修正语法错误、标点符号、重复词等，特别优化中文语音识别缺少标点符号的问题
-- 🎨 **现代化界面**: 使用 Tailwind CSS 构建美观的界面和流畅的动画效果
-- 🌓 **主题切换**: 默认黑夜模式，支持手动切换到白天模式，温和的米色暖色调保护眼睛
-- 📱 **响应式设计**: 支持桌面和移动设备
-- 📋 **一键复制**: 识别结果和修饰文本可一键复制到剪贴板
-- 🗑️ **数据清理**: 自动清理临时文件，保护隐私
-- 🌐 **多语言支持**: 支持中文和英文的智能修饰
+### 最新版本下载
 
-## 🛠️ 技术栈
+访问 [GitHub Releases](https://github.com/your-username/ASR-tauri-app/releases) 下载最新版本：
 
-- **前端**: React + TypeScript + Vite + Tailwind CSS
-- **后端**: Tauri (Rust) + Python
-- **语音识别**: OpenAI Whisper
-- **文本修饰**: 自定义 Python 脚本
-- **样式**: Tailwind CSS + 现代化设计
+- **macOS**: 下载 `.dmg` 文件，双击安装
+- **Windows**: 下载 `.msi` 或 `.exe` 文件安装
+- **Linux**: 下载 `.AppImage` 或 `.deb` 文件
 
-## 📋 系统要求
+### 系统要求
 
-- Node.js 18+ 或 Bun
-- Python 3.8+
-- Rust (通过 rustup 安装)
-- ffmpeg (音频处理必需)
+- **macOS**: 10.15 (Catalina) 或更高版本
+- **Windows**: Windows 10 或更高版本
+- **Linux**: Ubuntu 18.04+ 或其他支持 AppImage 的发行版
+- **内存**: 至少 4GB RAM
+- **存储**: 至少 500MB 可用空间
 
-## 🚀 快速开始
+### 安装说明
+
+#### macOS
+1. 下载 `.dmg` 文件
+2. 双击打开 DMG 文件
+3. 将应用拖拽到 Applications 文件夹
+4. 从启动台或 Applications 文件夹启动应用
+
+#### Windows
+1. 下载 `.msi` 或 `.exe` 文件
+2. 双击运行安装程序
+3. 按照安装向导完成安装
+4. 从开始菜单或桌面快捷方式启动
+
+#### Linux
+1. 下载 `.AppImage` 文件
+2. 给文件添加执行权限：`chmod +x 文件名.AppImage`
+3. 双击运行或通过终端执行
+
+## 📦 开发构建
+
+如果你想从源码构建应用，请按照以下步骤操作：
 
 ### 1. 克隆项目
 
@@ -60,6 +72,62 @@ bun run tauri dev
 # 构建生产版本
 bun run tauri build
 ```
+
+### 4. 发布新版本
+
+要发布新版本，请按照以下步骤：
+
+1. 使用发布脚本（推荐）：
+   ```bash
+   # 确保脚本有执行权限
+   chmod +x scripts/release.sh
+   
+   # 发布新版本
+   ./scripts/release.sh v1.0.0
+   ```
+
+2. 手动发布（如果脚本不可用）：
+   ```bash
+   # 更新版本号
+   # 更新 package.json 中的版本号
+   # 更新 src-tauri/Cargo.toml 中的版本号
+   # 更新 src-tauri/tauri.conf.json 中的版本号
+   
+   # 提交更改
+   git add .
+   git commit -m "Release v1.0.0"
+   git tag v1.0.0
+   git push origin main --tags
+   ```
+
+3. GitHub Actions 会自动构建并发布到 Releases 页面
+
+## ✨ 功能特性
+
+- 🎙️ **实时录音**: 使用浏览器录音 API 进行高质量录音
+- 🤖 **AI 语音识别**: 集成 OpenAI Whisper 模型进行准确的语音转文字
+- ✨ **智能文本修饰**: 自动检测语言并修正语法错误、标点符号、重复词等，特别优化中文语音识别缺少标点符号的问题
+- 🎨 **现代化界面**: 使用 Tailwind CSS 构建美观的界面和流畅的动画效果
+- 🌓 **主题切换**: 默认黑夜模式，支持手动切换到白天模式，温和的米色暖色调保护眼睛
+- 📱 **响应式设计**: 支持桌面和移动设备
+- 📋 **一键复制**: 识别结果和修饰文本可一键复制到剪贴板
+- 🗑️ **数据清理**: 自动清理临时文件，保护隐私
+- 🌐 **多语言支持**: 支持中文和英文的智能修饰
+
+## 🛠️ 技术栈
+
+- **前端**: React + TypeScript + Vite + Tailwind CSS
+- **后端**: Tauri (Rust) + Python
+- **语音识别**: OpenAI Whisper
+- **文本修饰**: 自定义 Python 脚本
+- **样式**: Tailwind CSS + 现代化设计
+
+## 📋 开发环境要求
+
+- Node.js 18+ 或 Bun
+- Python 3.8+
+- Rust (通过 rustup 安装)
+- ffmpeg (音频处理必需)
 
 ## 📖 使用说明
 
@@ -292,9 +360,17 @@ ASR-tauri-app/
 │   ├── whisper_asr.py     # Python 语音识别脚本
 │   ├── text_polish.py     # Python 文本修饰脚本
 │   └── requirements.txt   # Python 依赖
+├── .github/               # GitHub Actions 配置
+│   └── workflows/         # 自动化工作流
+│       ├── release.yml    # 发布工作流
+│       └── test.yml       # 测试工作流
+├── scripts/               # 构建和发布脚本
+│   └── release.sh         # 自动化发布脚本
 ├── public/                # 静态资源
-├── tailwind.config.js     # Tailwind CSS 配置
-├── postcss.config.js      # PostCSS 配置
+├── tailwind.config.cjs    # Tailwind CSS 配置
+├── postcss.config.cjs     # PostCSS 配置
+├── INSTALL.md             # 详细安装说明
+├── LICENSE                # 许可证文件
 └── package.json           # 项目配置
 ```
 
@@ -413,6 +489,14 @@ MIT License
 - [Tailwind CSS](https://tailwindcss.com/) - 实用优先的 CSS 框架
 
 ## 📝 更新日志
+
+### v2.1.0 (2024-01-XX)
+- 🚀 新增 GitHub Actions 自动构建和发布功能
+- 📦 支持一键发布到 GitHub Releases
+- 🔧 新增自动化发布脚本
+- 📚 完善安装说明和文档
+- 🎯 优化应用窗口大小和布局
+- 📄 添加 MIT 许可证
 
 ### v2.0.0 (2024-01-XX)
 - ✨ 新增智能文本修饰功能，特别优化中文语音识别缺少标点符号的问题
