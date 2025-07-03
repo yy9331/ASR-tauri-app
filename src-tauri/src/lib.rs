@@ -39,11 +39,38 @@ async fn asr_recognize(audio_data: Vec<u8>, audio_path: String) -> Result<String
     Ok(text)
 }
 
+#[tauri::command]
+async fn polish_text(text: String, language: Option<String>) -> Result<String, String> {
+    // 计算 text_polish.py 的绝对路径
+    let script_path = std::env::current_dir()
+        .map_err(|e| format!("Failed to get current dir: {}", e))?
+        .join("text_polish.py");
+    
+    // 准备命令参数
+    let mut args = vec![script_path.to_string_lossy().to_string(), text];
+    if let Some(lang) = language {
+        args.push(lang);
+    }
+    
+    // 调用 Python 脚本进行文本修饰
+    let output = Command::new("python")
+        .args(&args)
+        .output()
+        .map_err(|e| format!("Failed to run python: {}", e))?;
+    
+    if !output.status.success() {
+        return Err(String::from_utf8_lossy(&output.stderr).to_string());
+    }
+    
+    let result = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    Ok(result)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, asr_recognize])
+        .invoke_handler(tauri::generate_handler![greet, asr_recognize, polish_text])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

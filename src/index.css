@@ -1,0 +1,143 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* 白天主题 - 温和米色暖色调 */
+    --bg-primary: #faf8f5;      /* 温暖的米色背景 */
+    --bg-secondary: #f5f2ed;    /* 更深的米色 */
+    --bg-card: #fefcf9;         /* 暖白色卡片背景 */
+    --text-primary: #2d3748;    /* 深灰褐色文字 */
+    --text-secondary: #718096;  /* 中灰色次要文字 */
+    --border-color: #e2d8cc;    /* 米色边框 */
+    --accent-primary: #3b82f6;  /* 保持蓝色强调色 */
+    --accent-secondary: #60a5fa;
+    --success-bg: #f0f9f4;      /* 温和的绿色背景 */
+    --success-border: #bbf7d0;
+    --error-bg: #fef2f2;        /* 温和的红色背景 */
+    --error-border: #fecaca;
+    --warning-bg: #fffbeb;      /* 温和的黄色背景 */
+    --warning-border: #fed7aa;
+  }
+
+  [data-theme="dark"] {
+    /* 夜晚主题 - 深色舒适 */
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #334155;
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --border-color: #475569;
+    --accent-primary: #60a5fa;
+    --accent-secondary: #93c5fd;
+    --success-bg: #064e3b;
+    --success-border: #059669;
+    --error-bg: #7f1d1d;
+    --error-border: #dc2626;
+    --warning-bg: #78350f;
+    --warning-border: #d97706;
+  }
+
+  body {
+    @apply transition-colors duration-300;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+    background: var(--accent-primary);
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background: var(--accent-secondary);
+  }
+  
+  .btn-secondary {
+    @apply font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+    background: var(--text-secondary);
+    color: white;
+  }
+  
+  .btn-secondary:hover {
+    background: var(--text-primary);
+  }
+  
+  .btn-danger {
+    @apply font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+    background: #ef4444;
+    color: white;
+  }
+  
+  .btn-danger:hover {
+    background: #dc2626;
+  }
+  
+  .card {
+    @apply rounded-xl shadow-lg border p-6 backdrop-blur-sm transition-all duration-200;
+    background: var(--bg-card);
+    border-color: var(--border-color);
+  }
+  
+  .card:hover {
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200;
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+  }
+  
+  .input-field:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  .input-field::placeholder {
+    color: var(--text-secondary);
+  }
+  
+  .recording-pulse {
+    @apply animate-pulse-slow;
+  }
+
+  .theme-toggle {
+    @apply fixed top-4 right-4 z-50 p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+  }
+
+  .theme-toggle:hover {
+    background: var(--bg-secondary);
+  }
+
+  .text-content {
+    color: var(--text-primary);
+  }
+
+  .text-muted {
+    color: var(--text-secondary);
+  }
+
+  .bg-success {
+    background: var(--success-bg);
+    border-color: var(--success-border);
+  }
+
+  .bg-error {
+    background: var(--error-bg);
+    border-color: var(--error-border);
+  }
+
+  .bg-warning {
+    background: var(--warning-bg);
+    border-color: var(--warning-border);
+  }
+} 
