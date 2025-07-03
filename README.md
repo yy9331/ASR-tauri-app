@@ -23,6 +23,7 @@
 - Node.js 18+ 或 Bun
 - Python 3.8+
 - Rust (通过 rustup 安装)
+- ffmpeg (音频处理必需)
 
 ## 🚀 快速开始
 
@@ -39,8 +40,11 @@ cd ASR-tauri-app
 # 安装前端依赖
 bun install
 
-# 安装 Python 依赖
-pip install -r src-tauri/requirements.txt
+# 安装 Python 依赖 (推荐使用国内镜像源)
+pip install -r src-tauri/requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
+
+# 安装 ffmpeg (必需)
+conda install -c conda-forge ffmpeg
 ```
 
 ### 3. 运行应用
@@ -76,28 +80,122 @@ model = whisper.load_model("base")  # 可选: tiny, base, small, medium, large
 
 应用支持多种音频格式，推荐使用 WAV 格式以获得最佳识别效果。
 
-## 🐛 故障排除
+## 🐛 故障排除与修复过程
 
-### 麦克风权限问题
+在开发过程中，我们遇到了几个常见问题，以下是详细的解决方案：
 
-如果遇到麦克风权限问题：
+### 1. Python 脚本路径错误
+
+**问题描述**：
+```
+❌ 识别失败: python: can't open file '/Users/.../src-tauri/src-tauri/whisper_asr.py': [Errno 2] No such file or directory
+```
+
+**问题分析**：
+路径中有重复的 `src-tauri` 目录，导致 Python 找不到脚本文件。
+
+**解决方案**：
+修改 `src-tauri/src/lib.rs` 文件中的路径构建逻辑：
+
+```rust
+// 修复前
+let script_path = std::env::current_dir()
+    .map_err(|e| format!("Failed to get current dir: {}", e))?
+    .join("src-tauri").join("whisper_asr.py");
+
+// 修复后
+let script_path = std::env::current_dir()
+    .map_err(|e| format!("Failed to get current dir: {}", e))?
+    .join("whisper_asr.py");
+```
+
+**原因**：Tauri 应用运行时的工作目录已经是 `src-tauri`，不需要再添加前缀。
+
+### 2. SSL 证书验证失败
+
+**问题描述**：
+```
+WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1002)'))': /simple/openai-whisper/
+ERROR: Could not find a version that satisfies the requirement openai-whisper
+```
+
+**解决方案**：
+使用国内镜像源安装 Python 依赖：
+
+```bash
+# 方法1: 使用清华大学镜像源 (推荐)
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
+
+# 方法2: 临时禁用SSL验证
+pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org -r requirements.txt
+
+# 方法3: 使用conda安装
+conda install -c conda-forge openai-whisper
+conda install pytorch torchvision torchaudio -c pytorch
+```
+
+### 3. ffmpeg 缺失错误
+
+**问题描述**：
+```
+FileNotFoundError: [Errno 2] No such file or directory: 'ffmpeg'
+```
+
+**问题分析**：
+Whisper 需要 ffmpeg 来处理音频文件，但系统中没有安装。
+
+**解决方案**：
+
+```bash
+# 方法1: 使用conda安装 (推荐)
+conda install -c conda-forge ffmpeg
+
+# 方法2: 使用Homebrew安装 (macOS)
+brew install ffmpeg
+
+# 方法3: 手动下载安装
+# 访问 https://ffmpeg.org/download.html 下载对应版本
+```
+
+**验证安装**：
+```bash
+ffmpeg -version
+```
+
+### 4. Whisper 模型下载问题
+
+**问题描述**：
+首次运行时，Whisper 需要下载模型文件（约139MB），可能因为网络问题失败。
+
+**解决方案**：
+1. 确保网络连接稳定
+2. 使用代理或VPN
+3. 手动下载模型文件到 `~/.cache/whisper/` 目录
+
+### 5. 麦克风权限问题
+
+**问题描述**：
+```
+无法访问麦克风，请检查权限设置
+```
+
+**解决方案**：
 1. 确保浏览器允许麦克风访问
 2. 检查系统麦克风设置
 3. 重启应用
 
-### Python 环境问题
+### 6. Python 环境问题
 
-如果 Whisper 无法运行：
+**问题描述**：
+```
+ModuleNotFoundError: No module named 'whisper'
+```
+
+**解决方案**：
 1. 确保 Python 版本 >= 3.8
 2. 重新安装依赖: `pip install -r src-tauri/requirements.txt`
 3. 检查 Python 路径是否正确
-
-### 识别失败
-
-如果语音识别失败：
-1. 确保音频文件格式正确
-2. 检查网络连接（首次运行需要下载模型）
-3. 查看控制台错误信息
+4. 使用虚拟环境隔离依赖
 
 ## 📁 项目结构
 
@@ -117,6 +215,50 @@ ASR-tauri-app/
 └── package.json           # 项目配置
 ```
 
+## 🔍 调试技巧
+
+### 1. 查看详细错误信息
+在 Tauri 开发模式下，错误信息会显示在终端中。
+
+### 2. 测试 Python 脚本
+```bash
+cd src-tauri
+python whisper_asr.py <audio_file_path>
+```
+
+### 3. 检查依赖版本
+```bash
+pip list | grep whisper
+ffmpeg -version
+```
+
+### 4. 清理缓存
+```bash
+# 清理 Whisper 模型缓存
+rm -rf ~/.cache/whisper/
+
+# 清理 Tauri 构建缓存
+cargo clean
+```
+
+## 🚀 性能优化
+
+### 1. 模型选择
+- `tiny`: 最快，准确度较低
+- `base`: 平衡速度和准确度（推荐）
+- `small`: 更准确，速度较慢
+- `medium/large`: 最高准确度，速度最慢
+
+### 2. 音频质量
+- 采样率：16kHz（Whisper 默认）
+- 格式：WAV 或 MP3
+- 避免背景噪音
+
+### 3. 内存管理
+- 及时清理临时文件
+- 避免长时间录音
+- 定期重启应用
+
 ## 🤝 贡献
 
 欢迎提交 Issue 和 Pull Request！
@@ -129,4 +271,13 @@ MIT License
 
 - [Tauri](https://tauri.app/) - 跨平台桌面应用框架
 - [OpenAI Whisper](https://github.com/openai/whisper) - 语音识别模型
-- [React](https://reactjs.org/) - 前端框架 
+- [React](https://reactjs.org/) - 前端框架
+
+## 📝 更新日志
+
+### v1.0.0 (2024-01-XX)
+- ✅ 修复 Python 脚本路径问题
+- ✅ 解决 SSL 证书验证失败
+- ✅ 添加 ffmpeg 依赖安装说明
+- ✅ 完善故障排除文档
+- ✅ 优化错误处理机制 

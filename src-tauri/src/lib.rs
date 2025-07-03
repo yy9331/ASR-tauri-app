@@ -7,7 +7,6 @@ fn greet(name: &str) -> String {
 }
 
 use std::fs;
-use std::path::Path;
 
 #[tauri::command]
 async fn asr_recognize(audio_data: Vec<u8>, audio_path: String) -> Result<String, String> {
@@ -18,9 +17,14 @@ async fn asr_recognize(audio_data: Vec<u8>, audio_path: String) -> Result<String
     fs::write(&file_path, audio_data)
         .map_err(|e| format!("Failed to write audio file: {}", e))?;
     
+    // 计算 whisper_asr.py 的绝对路径
+    let script_path = std::env::current_dir()
+        .map_err(|e| format!("Failed to get current dir: {}", e))?
+        .join("whisper_asr.py");
+    
     // 调用 Python 脚本进行识别
     let output = Command::new("python")
-        .arg("src-tauri/whisper_asr.py")
+        .arg(script_path)
         .arg(file_path.to_str().unwrap())
         .output()
         .map_err(|e| format!("Failed to run python: {}", e))?;

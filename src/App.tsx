@@ -2,6 +2,9 @@ import { useState, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 
+// 兼容 Tauri 2.x/1.x 的环境检测
+const isTauri = navigator.userAgent.includes("Tauri");
+
 function App() {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -16,7 +19,7 @@ function App() {
     try {
       setError("");
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
@@ -25,7 +28,7 @@ function App() {
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         const url = URL.createObjectURL(audioBlob);
         setAudioUrl(url);
       };
@@ -52,21 +55,18 @@ function App() {
     setError("");
     
     try {
-      // 将音频 blob 转换为字节数组
+      // 桌面端，调用 Whisper
       const response = await fetch(audioUrl);
       const audioBlob = await response.blob();
       const arrayBuffer = await audioBlob.arrayBuffer();
       const audioData = Array.from(new Uint8Array(arrayBuffer));
-      
-      // 创建临时文件路径
-      const tempPath = `temp_recording_${Date.now()}.wav`;
-      
-      // 调用 Tauri 命令进行语音识别
-      const text = await invoke("asr_recognize", { 
+      const tempPath = `temp_recording_${Date.now()}.webm`;
+
+      const text = await invoke("asr_recognize", {
         audioData,
-        audioPath: tempPath 
+        audioPath: tempPath
       }) as string;
-      
+
       setRecognizedText(text);
     } catch (err) {
       setError(`识别失败: ${err}`);
@@ -89,6 +89,11 @@ function App() {
       <header className="app-header">
         <h1>🎤 语音识别应用</h1>
         <p>使用 Whisper 进行实时语音转文字</p>
+        {!isTauri && (
+          <p style={{ fontSize: '0.9rem', opacity: 0.8, marginTop: '10px' }}>
+            🌐 网页端模式 - 录音功能可用，语音识别为演示模式
+          </p>
+        )}
       </header>
 
       <main className="app-main">
