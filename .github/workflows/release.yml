@@ -111,6 +111,15 @@ jobs:
           # 设置环境变量
           echo "设置环境变量..."
           echo "CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=link.exe" >> $env:GITHUB_ENV
+          
+          # 清理可能存在的旧 WiX 工具
+          echo "清理旧的 WiX 工具..."
+          Remove-Item -Path "$env:USERPROFILE\AppData\Local\tauri\WixTools*" -Recurse -Force -ErrorAction SilentlyContinue
+          
+          # 设置 WiX 相关环境变量
+          echo "设置 WiX 环境变量..."
+          echo "WIX_ROOT=$env:USERPROFILE\AppData\Local\tauri\WixTools314" >> $env:GITHUB_ENV
+          echo "PATH=$env:USERPROFILE\AppData\Local\tauri\WixTools314;$env:PATH" >> $env:GITHUB_ENV
 
       - name: Install frontend dependencies
         run: bun install
@@ -129,6 +138,9 @@ jobs:
           MACOSX_DEPLOYMENT_TARGET: "10.15"
           # Windows 特定环境变量
           CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER: "link.exe"
+          # Windows WiX 工具环境变量
+          WIX_ROOT: ${{ env.WIX_ROOT }}
+          PATH: ${{ env.PATH }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

@@ -116,6 +116,15 @@ jobs:
           
           echo "设置环境变量..."
           echo "CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=link.exe" >> $env:GITHUB_ENV
+          
+          # 清理可能存在的旧 WiX 工具
+          echo "清理旧的 WiX 工具..."
+          Remove-Item -Path "$env:USERPROFILE\AppData\Local\tauri\WixTools*" -Recurse -Force -ErrorAction SilentlyContinue
+          
+          # 设置 WiX 相关环境变量
+          echo "设置 WiX 环境变量..."
+          echo "WIX_ROOT=$env:USERPROFILE\AppData\Local\tauri\WixTools314" >> $env:GITHUB_ENV
+          echo "PATH=$env:USERPROFILE\AppData\Local\tauri\WixTools314;$env:PATH" >> $env:GITHUB_ENV
 
       - name: Install system dependencies (macOS)
         if: github.event.inputs.platform == 'macos-latest'
@@ -164,6 +173,12 @@ jobs:
           echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
           
           echo "=== 尝试构建 ==="
+          # 设置 Windows 特定环境变量
+          if [ "${{ github.event.inputs.platform }}" = "windows-latest" ]; then
+            export WIX_ROOT="$WIX_ROOT"
+            export PATH="$WIX_ROOT:$PATH"
+          fi
+          
           bun run tauri build --verbose || {
             echo "构建失败，尝试调试模式..."
             bun run tauri build --debug

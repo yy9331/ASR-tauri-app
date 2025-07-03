@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "智能语音识别助手",
+  "productName": "CM-ASR-App",
   "version": "0.1.0",
   "identifier": "com.cm-asr-app.desktop",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "智能语音识别助手",
+        "title": "CM-ASR-App",
         "width": 900,
         "height": 700,
         "minWidth": 800,
@@ -37,7 +37,12 @@
     ],
     "resources": [
       "Info.plist"
-    ]
+    ],
+    "windows": {
+      "wix": {
+        "language": "en-US"
+      }
+    }
   },
   "plugins": {
     "opener": {}
