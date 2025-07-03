@@ -9,6 +9,12 @@ GitHub Actions 构建失败的主要原因是：
 3. **平台特定问题**：不同操作系统的构建环境配置
 4. **SSL 证书问题**：Python 依赖安装时的网络问题
 
+## 当前状态
+
+✅ **macOS 构建成功** - 已生成 5.9MB 的构建产物  
+❌ **Ubuntu 构建失败** - 需要修复 WebKit 依赖问题  
+❌ **Windows 构建失败** - 需要修复 Visual Studio 配置问题  
+
 ## 已修复的问题
 
 ### 1. Tauri 2.0 配置修复
@@ -17,9 +23,6 @@ GitHub Actions 构建失败的主要原因是：
 
 ```json
 {
-  "webview": {
-    "installMode": "system"
-  },
   "plugins": {
     "opener": {}
   }
@@ -33,13 +36,15 @@ GitHub Actions 构建失败的主要原因是：
 - 添加了平台特定的环境变量
 - 优化了 Rust 工具链配置
 - **添加了 SSL 证书问题的解决方案**
+- **添加了 FFmpeg 音频处理依赖**
+- **修复了 Windows Chocolatey 安装问题**
 
 ### 3. Cargo.toml 更新
 
 添加了必要的 Tauri 特性：
 
 ```toml
-tauri = { version = "2", features = ["shell-open"] }
+tauri = { version = "2", features = [] }
 ```
 
 ### 4. SSL 证书问题解决方案
@@ -48,6 +53,14 @@ tauri = { version = "2", features = ["shell-open"] }
 
 ```bash
 ./scripts/install-python-deps.sh
+```
+
+## 平台诊断工具
+
+使用平台诊断脚本检查环境：
+
+```bash
+./scripts/platform-test.sh
 ```
 
 ## 本地测试构建
@@ -101,6 +114,93 @@ SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certifica
    ./scripts/install-python-deps.sh
    ```
 
+### Ubuntu/Linux 构建问题
+
+**常见错误**：
+- `Process completed with exit code 1`
+- `webkitgtk: Unsatisfied requirements failed this build`
+
+**解决方案**：
+
+1. **安装完整的 WebKit 依赖**：
+   ```bash
+   sudo apt-get update
+   sudo apt-get install -y \
+     build-essential \
+     libssl-dev \
+     pkg-config \
+     libwebkit2gtk-4.0-dev \
+     libgtk-3-dev \
+     libsoup-3.0-dev \
+     libjavascriptcoregtk-4.1-dev \
+     libayatana-appindicator3-dev \
+     librsvg2-dev \
+     libcairo2-dev \
+     libpango1.0-dev \
+     libatk1.0-dev \
+     libgdk-pixbuf2.0-dev \
+     libglib2.0-dev \
+     libgirepository1.0-dev \
+     # 额外的 WebKit 依赖
+     libwebkit2gtk-4.1-dev \
+     libsoup2.4-dev \
+     libgstreamer1.0-dev \
+     libgstreamer-plugins-base1.0-dev \
+     # 音频处理依赖
+     ffmpeg \
+     libavcodec-dev \
+     libavformat-dev \
+     libavutil-dev
+   ```
+
+2. **设置环境变量**：
+   ```bash
+   export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig
+   export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
+   ```
+
+3. **检查 WebKit 版本兼容性**：
+   ```bash
+   pkg-config --modversion webkit2gtk-4.0
+   ```
+
+### Windows 构建问题
+
+**常见错误**：
+- `Process completed with exit code 1`
+- `link.exe not found`
+- `Visual Studio Build Tools not found`
+
+**解决方案**：
+
+1. **安装 Visual Studio Build Tools**：
+   ```powershell
+   # 安装 Chocolatey
+   Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+   
+   # 安装 Visual Studio Build Tools
+   choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended" -y
+   
+   # 安装 FFmpeg
+   choco install ffmpeg -y
+   ```
+
+2. **设置 Rust 目标**：
+   ```bash
+   rustup target add x86_64-pc-windows-msvc
+   ```
+
+3. **设置环境变量**：
+   ```bash
+   set CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=link.exe
+   ```
+
+4. **检查 Visual Studio 安装**：
+   ```bash
+   where cl
+   where link
+   ```
+
 ### macOS 构建问题
 
 如果遇到 WebKit 相关错误：
@@ -116,44 +216,9 @@ SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certifica
    rustup target add aarch64-apple-darwin x86_64-apple-darwin
    ```
 
-### Ubuntu/Linux 构建问题
-
-如果遇到 WebKit 依赖错误：
-
-1. 安装必要的系统依赖：
+3. 安装音频处理依赖：
    ```bash
-   sudo apt-get update
-   sudo apt-get install -y \
-     libwebkit2gtk-4.0-dev \
-     libgtk-3-dev \
-     libsoup-3.0-dev \
-     libjavascriptcoregtk-4.1-dev \
-     libayatana-appindicator3-dev \
-     librsvg2-dev \
-     libcairo2-dev \
-     libpango1.0-dev \
-     libatk1.0-dev \
-     libgdk-pixbuf2.0-dev \
-     libglib2.0-dev \
-     libgirepository1.0-dev
-   ```
-
-2. 设置环境变量：
-   ```bash
-   export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig
-   export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
-   ```
-
-### Windows 构建问题
-
-1. 安装 Visual Studio Build Tools：
-   ```bash
-   choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
-   ```
-
-2. 设置 Rust 目标：
-   ```bash
-   rustup target add x86_64-pc-windows-msvc
+   brew install ffmpeg
    ```
 
 ## 验证构建
@@ -167,8 +232,8 @@ SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certifica
 1. 推送更改到 GitHub
 2. 创建新的标签触发构建：
    ```bash
-   git tag v0.1.3
-   git push origin v0.1.3
+   git tag v0.1.4
+   git push origin v0.1.4
    ```
 3. 监控 GitHub Actions 构建状态
 
@@ -179,4 +244,21 @@ SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certifica
 1. **使用代理**：设置 HTTP_PROXY 和 HTTPS_PROXY 环境变量
 2. **使用 VPN**：连接到稳定的网络
 3. **手动下载**：从镜像站手动下载 wheel 文件并安装
-4. **跳过 Python 依赖**：如果 Python 功能不是必需的，可以暂时跳过安装 
+4. **跳过 Python 依赖**：如果 Python 功能不是必需的，可以暂时跳过安装
+
+## 最新修复
+
+### v0.1.4 修复内容
+
+1. **修复 GitHub Actions 工作流**：
+   - 添加了缺失的步骤名称
+   - 优化了 Ubuntu WebKit 依赖安装
+   - 修复了 Windows Chocolatey 安装问题
+   - 添加了 FFmpeg 音频处理依赖
+
+2. **创建平台诊断工具**：
+   - `scripts/platform-test.sh` - 检测平台特定问题
+
+3. **增强错误处理**：
+   - 改进了 Python 依赖安装的容错性
+   - 添加了更详细的错误信息 
